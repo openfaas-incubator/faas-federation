@@ -1,0 +1,7 @@
+.idea
+.vscode
+examples/
+dist
+faas-federation
+dive.log
+deployment/k8s/yaml/gateway-dep.yml
