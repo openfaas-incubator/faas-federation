@@ -25,7 +25,7 @@ build-local:
         -o faas-federation .
 
 .PHONY: up-local
-up-local: build-local
+up: build
 	docker stack deploy federation --compose-file ./docker-compose.yml
 
 .PHONY: release

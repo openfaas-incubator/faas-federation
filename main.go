@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/openfaas/faas-federation/handlers"
 	"github.com/openfaas/faas-federation/routing"
 	"github.com/openfaas/faas-federation/types"
@@ -44,14 +45,18 @@ func main() {
 	osEnv := types.OsEnv{}
 	cfg := readConfig.Read(osEnv)
 
+	providerLookup, err :=routing.NewDefaultProviderRouting(cfg.Providers, cfg.DefaultProvider)
+	if err != nil {
+		panic(fmt.Errorf("could not create provider lookup. %v", err))
+	}
 
-	var proxyFunc = proxy.NewHandlerFunc(cfg.ReadTimeout,
-		handlers.NewFunctionLookup(routing.NewDefaultProviderRouting(cfg.Providers, cfg.DefaultProvider)))
+	proxyFunc := proxy.NewHandlerFunc(cfg.ReadTimeout,
+		handlers.NewFunctionLookup(providerLookup))
 
 	bootstrapHandlers := bootTypes.FaaSHandlers{
 		FunctionProxy:  proxyFunc,
 		DeleteHandler:  proxyFunc,
-		DeployHandler:  proxyFunc,
+		DeployHandler:  handlers.MakeDeployHandler(proxyFunc, providerLookup),
 		FunctionReader: handlers.MakeFunctionReader(),
 		ReplicaReader:  handlers.MakeReplicaReader(),
 		ReplicaUpdater: handlers.MakeReplicaUpdater(),

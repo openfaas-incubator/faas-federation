@@ -4,7 +4,15 @@ RUN mkdir -p /go/src/github.com/openfaas/faas-federation/
 
 WORKDIR /go/src/github.com/openfaas/faas-federation
 
-COPY . .
+COPY .git     .git
+COPY handlers handlers
+COPY routing  routing
+COPY testing  testing
+COPY types    types
+COPY vendor   vendor
+COPY version  version
+COPY main.go  main.go
+
 
 #RUN curl -sL https://github.com/alexellis/license-check/releases/download/0.2.2/license-check > /usr/bin/license-check \
 #    && chmod +x /usr/bin/license-check

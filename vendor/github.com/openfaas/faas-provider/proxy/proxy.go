@@ -26,6 +26,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"time"
 
@@ -132,7 +133,10 @@ func proxyRequest(w http.ResponseWriter, originalReq *http.Request, proxyClient 
 	defer proxyReq.Body.Close()
 
 	start := time.Now()
+	dumpRequest, _ := httputil.DumpRequest(proxyReq, true)
+	log.Printf("--- Request ---\n%s\n--- ----\n", string(dumpRequest))
 	response, err := proxyClient.Do(proxyReq.WithContext(ctx))
+
 	seconds := time.Since(start)
 
 	if err != nil {
@@ -142,13 +146,16 @@ func proxyRequest(w http.ResponseWriter, originalReq *http.Request, proxyClient 
 		return
 	}
 
-	log.Printf("%s took %f seconds\n", functionName, seconds.Seconds())
+	dumpResponse, _ := httputil.DumpResponse(response, true)
+	log.Printf("--- Response ---\n%s\n--- ----\n", string(dumpResponse))
+
+	log.Printf("%s took %f seconds...\n", functionName, seconds.Seconds())
 
 	clientHeader := w.Header()
 	copyHeaders(clientHeader, &response.Header)
 	w.Header().Set("Content-Type", getContentType(response.Header, originalReq.Header))
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(response.StatusCode)
 	io.Copy(w, response.Body)
 }
 

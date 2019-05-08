@@ -1,6 +1,7 @@
 package routing
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/openfaas/faas/gateway/requests"
@@ -9,7 +10,7 @@ import (
 func Test_defaultProviderRouting_Resolve(t *testing.T) {
 	type fields struct {
 		cache     map[string]*requests.CreateFunctionRequest
-		providers map[string]bool
+		providers map[string]*url.URL
 		defaultProvider string
 	}
 	type args struct {
@@ -29,12 +30,12 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 					"echo": {Service: "echo", Annotations: &map[string]string{"federation.provider_name": "provider_a"}},
 					"cat":  {Service: "cat", Annotations: &map[string]string{"federation.provider_name": "provider_b"}},
 				},
-				providers: map[string]bool{
-					"provider_a" : true,
-					"provider_b" : true,
+				providers: map[string]*url.URL{
+					"provider_a" : parseURL("http://provider_a:8080"),
+					"provider_b" : parseURL("http://provider_b:8080"),
 				},
-				defaultProvider: "provider_a",
-			}, args: args{functionName: "echo"}, wantProviderHostName: "provider_a", wantErr: false,
+				defaultProvider: "http://provider_a:8080",
+			}, args: args{functionName: "echo"}, wantProviderHostName: "provider_a:8080", wantErr: false,
 		},
 		{
 			name: "provider b is resolved",
@@ -43,12 +44,12 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 					"echo": {Service: "echo", Annotations: &map[string]string{"federation.provider_name": "provider_a"}},
 					"cat":  {Service: "cat", Annotations: &map[string]string{"federation.provider_name": "provider_b"}},
 				},
-				providers: map[string]bool{
-					"provider_a" : true,
-					"provider_b" : true,
+				providers: map[string]*url.URL{
+					"provider_a" : parseURL("http://provider_a:8080"),
+					"provider_b" : parseURL("http://provider_b:8080"),
 				},
-				defaultProvider: "provider_a",
-			}, args: args{functionName: "cat"}, wantProviderHostName: "provider_b", wantErr: false,
+				defaultProvider: "http://provider_a:8080",
+			}, args: args{functionName: "cat"}, wantProviderHostName: "provider_b:8080", wantErr: false,
 		},
 		{
 			name: "default provider is resolved, when constraint is missing",
@@ -57,12 +58,12 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 					"echo": {Service: "echo", Annotations: &map[string]string{"federation.provider_name": "provider_a"}},
 					"cat":  {Service: "cat", Annotations: &map[string]string{}},
 				},
-				providers: map[string]bool{
-					"provider_a" : true,
-					"provider_b" : true,
+				providers: map[string]*url.URL{
+					"provider_a" : parseURL("http://provider_a:8080"),
+					"provider_b" : parseURL("http://provider_b:8080"),
 				},
-				defaultProvider: "provider_a",
-			}, args: args{functionName: "cat"}, wantProviderHostName: "provider_a", wantErr: false,
+				defaultProvider: "http://provider_a:8080",
+			}, args: args{functionName: "cat"}, wantProviderHostName: "provider_a:8080", wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -70,16 +71,28 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 			d := &defaultProviderRouting{
 				cache:     tt.fields.cache,
 				providers: tt.fields.providers,
-				defaultProvider: tt.fields.defaultProvider,
+				defaultProvider: parseURL(tt.fields.defaultProvider),
 			}
 			gotProviderHostName, err := d.Resolve(tt.args.functionName)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("defaultProviderRouting.Resolve() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if gotProviderHostName != tt.wantProviderHostName {
-				t.Errorf("defaultProviderRouting.Resolve() = got %v, want %v", gotProviderHostName, tt.wantProviderHostName)
+
+			if gotProviderHostName == nil {
+				t.Errorf("defaultProviderRouting.Resolve() = nil")
+			}
+
+			if gotProviderHostName.Host != tt.wantProviderHostName {
+				t.Errorf("defaultProviderRouting.Resolve() = got %v, want %v", gotProviderHostName.Host, tt.wantProviderHostName)
 			}
 		})
 	}
+}
+
+
+func parseURL(v string) *url.URL {
+	u, _ := url.Parse(v)
+
+	return u
 }

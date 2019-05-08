@@ -3,13 +3,15 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/openfaas/faas-federation/routing"
 	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/openfaas/faas-federation/routing"
+	log "github.com/sirupsen/logrus"
 )
 
 const urlScheme = "http"
@@ -55,27 +57,15 @@ func NewFunctionLookup(providerLookup routing.ProviderLookup) *FunctionLookup {
 
 // Resolve implements the openfaas-provider proxy.BaseURLResolver interface.
 func (l *FunctionLookup) Resolve(name string) (u url.URL, err error) {
-
-	providerHostName, err := l.providerLookup.Resolve(name)
+	log.Infof("resolving %s", name)
+	providerURL, err := l.providerLookup.Resolve(name)
 	if err != nil {
 		return url.URL{}, err
 	}
 
-	return l.ResolveContext(context.Background(), providerHostName)
-}
+	log.Infof("using provider %s to resolve to", providerURL.String())
 
-// ResolveContext provides an implementation of openfaas-provider proxy.BaseURLResolver with
-// context support. See `Resolve`
-func (l *FunctionLookup) ResolveContext(ctx context.Context, name string) (u url.URL, err error) {
-
-	u.Host, err = l.byDNSRoundRobin(ctx, name)
-
-	if err != nil {
-		return u, err
-	}
-
-	u.Scheme = l.scheme
-	return u, nil
+	return *providerURL, nil
 }
 
 
