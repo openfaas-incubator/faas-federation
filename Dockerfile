@@ -1,8 +1,8 @@
 FROM golang:1.10.4 as build
 
-RUN mkdir -p /go/src/github.com/openfaas/faas-federation/
+RUN mkdir -p /go/src/github.com/ewilde/faas-federation/
 
-WORKDIR /go/src/github.com/openfaas/faas-federation
+WORKDIR /go/src/github.com/ewilde/faas-federation
 
 COPY .git     .git
 COPY handlers handlers
@@ -46,6 +46,6 @@ EXPOSE 8080
 ENV http_proxy      ""
 ENV https_proxy     ""
 
-COPY --from=build /go/src/github.com/openfaas/faas-federation/faas-federation    .
+COPY --from=build /go/src/github.com/ewilde/faas-federation/faas-federation    .
 
 CMD ["./faas-federation"]

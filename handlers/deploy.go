@@ -7,15 +7,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/openfaas/faas-federation/routing"
-	"github.com/openfaas/faas/gateway/requests"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/ewilde/faas-federation/routing"
+	"github.com/gorilla/mux"
+	"github.com/openfaas/faas/gateway/requests"
+	log "github.com/sirupsen/logrus"
 )
 
 var functions = map[string]*requests.Function{}
+
 // MakeDeployHandler creates a handler to create new functions in the cluster
 func MakeDeployHandler(proxy http.HandlerFunc, providerLookup routing.ProviderLookup) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

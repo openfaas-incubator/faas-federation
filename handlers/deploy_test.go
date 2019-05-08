@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ewilde/faas-federation/routing"
+	acc "github.com/ewilde/faas-federation/testing"
 	"github.com/gorilla/mux"
-	"github.com/openfaas/faas-federation/routing"
-	acc "github.com/openfaas/faas-federation/testing"
 	"github.com/openfaas/faas-provider/proxy"
 )
 

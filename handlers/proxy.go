@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/ewilde/faas-federation/routing"
 	"github.com/gorilla/mux"
-	"github.com/openfaas/faas-federation/routing"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -33,7 +33,6 @@ func MakeProxy() http.HandlerFunc {
 		w.Write([]byte(responseBody))
 	}
 }
-
 
 // FunctionLookup is a openfaas-provider proxy.BaseURLResolver that allows the
 // caller to verify that a function is resolvable.
@@ -67,7 +66,6 @@ func (l *FunctionLookup) Resolve(name string) (u url.URL, err error) {
 
 	return *providerURL, nil
 }
-
 
 // resolve the function by checking the available docker DNSRR resolution
 func (l *FunctionLookup) byDNSRoundRobin(ctx context.Context, name string) (string, error) {

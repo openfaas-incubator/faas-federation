@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/openfaas/faas-federation/handlers"
-	"github.com/openfaas/faas-federation/routing"
-	"github.com/openfaas/faas-federation/types"
-	"github.com/openfaas/faas-federation/version"
+	"github.com/ewilde/faas-federation/handlers"
+	"github.com/ewilde/faas-federation/routing"
+	"github.com/ewilde/faas-federation/types"
+	"github.com/ewilde/faas-federation/version"
 	"github.com/openfaas/faas-provider"
 	"github.com/openfaas/faas-provider/proxy"
 	"os"
