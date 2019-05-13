@@ -9,8 +9,8 @@ import (
 
 func Test_defaultProviderRouting_Resolve(t *testing.T) {
 	type fields struct {
-		cache     map[string]*requests.CreateFunctionRequest
-		providers map[string]*url.URL
+		cache           map[string]*requests.CreateFunctionRequest
+		providers       map[string]*url.URL
 		defaultProvider string
 	}
 	type args struct {
@@ -31,8 +31,8 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 					"cat":  {Service: "cat", Annotations: &map[string]string{"federation.provider_name": "provider_b"}},
 				},
 				providers: map[string]*url.URL{
-					"provider_a" : parseURL("http://provider_a:8080"),
-					"provider_b" : parseURL("http://provider_b:8080"),
+					"provider_a": parseURL("http://provider_a:8080"),
+					"provider_b": parseURL("http://provider_b:8080"),
 				},
 				defaultProvider: "http://provider_a:8080",
 			}, args: args{functionName: "echo"}, wantProviderHostName: "provider_a:8080", wantErr: false,
@@ -45,8 +45,8 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 					"cat":  {Service: "cat", Annotations: &map[string]string{"federation.provider_name": "provider_b"}},
 				},
 				providers: map[string]*url.URL{
-					"provider_a" : parseURL("http://provider_a:8080"),
-					"provider_b" : parseURL("http://provider_b:8080"),
+					"provider_a": parseURL("http://provider_a:8080"),
+					"provider_b": parseURL("http://provider_b:8080"),
 				},
 				defaultProvider: "http://provider_a:8080",
 			}, args: args{functionName: "cat"}, wantProviderHostName: "provider_b:8080", wantErr: false,
@@ -59,8 +59,8 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 					"cat":  {Service: "cat", Annotations: &map[string]string{}},
 				},
 				providers: map[string]*url.URL{
-					"provider_a" : parseURL("http://provider_a:8080"),
-					"provider_b" : parseURL("http://provider_b:8080"),
+					"provider_a": parseURL("http://provider_a:8080"),
+					"provider_b": parseURL("http://provider_b:8080"),
 				},
 				defaultProvider: "http://provider_a:8080",
 			}, args: args{functionName: "cat"}, wantProviderHostName: "provider_a:8080", wantErr: false,
@@ -69,8 +69,8 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &defaultProviderRouting{
-				cache:     tt.fields.cache,
-				providers: tt.fields.providers,
+				cache:           tt.fields.cache,
+				providers:       tt.fields.providers,
 				defaultProvider: parseURL(tt.fields.defaultProvider),
 			}
 			gotProviderHostName, err := d.Resolve(tt.args.functionName)
@@ -89,7 +89,6 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 		})
 	}
 }
-
 
 func parseURL(v string) *url.URL {
 	u, _ := url.Parse(v)

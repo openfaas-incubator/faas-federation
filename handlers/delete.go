@@ -8,12 +8,14 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/gorilla/mux"
+
 	"github.com/openfaas/faas/gateway/requests"
 	log "github.com/sirupsen/logrus"
 )
 
 // MakeDeleteHandler delete a function
-func MakeDeleteHandler() http.HandlerFunc {
+func MakeDeleteHandler(proxy http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Info("delete request")
 		defer r.Body.Close()
@@ -32,7 +34,15 @@ func MakeDeleteHandler() http.HandlerFunc {
 			return
 		}
 
-		delete(functions, request.FunctionName)
+		pathVars := mux.Vars(r)
+		if pathVars == nil {
+			r = mux.SetURLVars(r, map[string]string{})
+			pathVars = mux.Vars(r)
+		}
+
+		pathVars["name"] = request.FunctionName
+		pathVars["params"] = r.URL.Path
+		proxy.ServeHTTP(w, r)
 
 		log.Infof("delete request %s successful", request.FunctionName)
 	}

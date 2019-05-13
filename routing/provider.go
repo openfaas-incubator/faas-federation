@@ -2,29 +2,34 @@ package routing
 
 import (
 	"fmt"
-	"github.com/openfaas/faas/gateway/requests"
 	"net/url"
 	"strings"
 	"sync"
+
+	"github.com/openfaas/faas/gateway/requests"
+	log "github.com/sirupsen/logrus"
 )
 
-const federationProviderNameConstraint = "federation.provider_name"
+const federationProviderNameConstraint = "com.openfaas.federation.gatewayx"
 
 // ProviderLookup allows the federation to determine which provider
 // is currently responsible for a given function
 type ProviderLookup interface {
-	Resolve(functionName string) (providerUri *url.URL, err error)
+	Resolve(functionName string) (providerURI *url.URL, err error)
 	AddFunction(f *requests.CreateFunctionRequest)
 	GetFunction(name string) (*requests.CreateFunctionRequest, bool)
+	GetFunctions() []*requests.CreateFunctionRequest
 }
 
 type defaultProviderRouting struct {
-	cache map[string] *requests.CreateFunctionRequest
-	providers map[string]*url.URL
+	cache           map[string]*requests.CreateFunctionRequest
+	providers       map[string]*url.URL
 	defaultProvider *url.URL
-	lock sync.RWMutex
+	lock            sync.RWMutex
 }
 
+// NewDefaultProviderRouting creates a default way to resolve providers currently based
+// on name constraint
 func NewDefaultProviderRouting(providers []string, defaultProvider string) (ProviderLookup, error) {
 	providerMap := map[string]*url.URL{}
 
@@ -33,7 +38,7 @@ func NewDefaultProviderRouting(providers []string, defaultProvider string) (Prov
 		if err != nil {
 			return nil, fmt.Errorf("error parsing URL using value %s. %v", v, err)
 		}
-		providerMap[getHostName(pURL)] = pURL
+		providerMap[getHostNameWithoutPorts(pURL)] = pURL
 	}
 
 	d, err := url.Parse(defaultProvider)
@@ -42,14 +47,13 @@ func NewDefaultProviderRouting(providers []string, defaultProvider string) (Prov
 	}
 
 	return &defaultProviderRouting{
-		cache:make(map[string]*requests.CreateFunctionRequest),
-		providers: providerMap,
+		cache:           make(map[string]*requests.CreateFunctionRequest),
+		providers:       providerMap,
 		defaultProvider: d,
 	}, nil
 }
 
-
-func (d *defaultProviderRouting) Resolve(functionName string) (providerUri *url.URL, err error) {
+func (d *defaultProviderRouting) Resolve(functionName string) (providerURI *url.URL, err error) {
 	f, ok := d.GetFunction(functionName)
 	if !ok {
 		return nil, fmt.Errorf("can not find function %s in cache map", functionName)
@@ -57,18 +61,31 @@ func (d *defaultProviderRouting) Resolve(functionName string) (providerUri *url.
 
 	c, ok := (*f.Annotations)[federationProviderNameConstraint]
 	if !ok {
+		log.Infof("%s constraint not found using default provider %s", federationProviderNameConstraint, d.defaultProvider.String())
 		return d.defaultProvider, nil
 	}
 
-	pURL, ok := d.providers[c]
-	if !ok {
+	pURL := d.matchBasedOnName(c)
+	if pURL == nil {
+		log.Infof("%s constraint value found but does not exist in provider list, using default provider %s", c, d.defaultProvider.String())
+
 		return d.defaultProvider, nil
 	}
 
 	return pURL, nil
 }
 
-func getHostName(v *url.URL) string {
+func (d *defaultProviderRouting) matchBasedOnName(v string) *url.URL {
+	for _, u := range d.providers {
+		if strings.EqualFold(getHostNameWithoutPorts(u), v) {
+			return u
+		}
+	}
+
+	return nil
+}
+
+func getHostNameWithoutPorts(v *url.URL) string {
 	return strings.Split(v.Host, ":")[0]
 }
 
@@ -83,6 +100,16 @@ func (d *defaultProviderRouting) GetFunction(name string) (*requests.CreateFunct
 	defer d.lock.RUnlock()
 	v, ok := d.cache[name]
 
-
 	return v, ok
+}
+
+func (d *defaultProviderRouting) GetFunctions() []*requests.CreateFunctionRequest {
+	d.lock.RLock()
+	defer d.lock.RUnlock()
+	var result []*requests.CreateFunctionRequest
+	for _, v := range d.cache {
+		result = append(result, v)
+	}
+
+	return result
 }

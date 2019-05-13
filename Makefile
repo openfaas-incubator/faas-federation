@@ -2,7 +2,7 @@ GO_FILES?=$$(find . -name '*.go' |grep -v vendor)
 TAG?=latest
 SQUASH?=false
 
-default: install build-resources lint vet build test testacc
+default: lint vet build test
 
 .PHONY: test
 test: goimportscheck
@@ -48,7 +48,7 @@ goimportscheck:
 .PHONY: vet
 vet:
 	@echo "go vet ."
-	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
+	@go vet $$(go list ./... | grep -v vendor/ | grep -v examples/) ; if [ $$? -eq 1 ]; then \
 		echo ""; \
 		echo "Vet found suspicious constructs. Please check the reported constructs"; \
 		echo "and fix them if necessary before submitting the code for review."; \
