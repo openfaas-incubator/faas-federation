@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const federationProviderNameConstraint = "com.openfaas.federation.gatewayx"
+const federationProviderNameConstraint = "com.openfaas.federation.gateway"
 
 // ProviderLookup allows the federation to determine which provider
 // is currently responsible for a given function
@@ -19,6 +19,7 @@ type ProviderLookup interface {
 	AddFunction(f *requests.CreateFunctionRequest)
 	GetFunction(name string) (*requests.CreateFunctionRequest, bool)
 	GetFunctions() []*requests.CreateFunctionRequest
+	ReloadCache() error
 }
 
 type defaultProviderRouting struct {
@@ -53,10 +54,44 @@ func NewDefaultProviderRouting(providers []string, defaultProvider string) (Prov
 	}, nil
 }
 
+func (d *defaultProviderRouting) ReloadCache() error {
+	log.Info("reloading cache starting...")
+	var urls []string
+	for _, v := range d.providers {
+		urls = append(urls, v.String())
+	}
+
+	result, err := ReadServices(urls)
+	if err != nil {
+		return fmt.Errorf("could not reload cache. %v", err)
+	}
+
+	for k, v := range result.Providers {
+		for _, f := range v {
+			cf := requestToCreate(f)
+			ensureAnnotation(cf, k)
+			d.AddFunction(cf)
+		}
+
+		log.Infof("   added %d functions for provider %s", len(v), k)
+	}
+
+	log.Info("reloading cache completed successfully")
+	return nil
+}
+
 func (d *defaultProviderRouting) Resolve(functionName string) (providerURI *url.URL, err error) {
 	f, ok := d.GetFunction(functionName)
 	if !ok {
-		return nil, fmt.Errorf("can not find function %s in cache map", functionName)
+		log.Warnf("can not find function %s in cache map, will attempt cache reload", functionName)
+		if err := d.ReloadCache(); err != nil {
+			return nil, fmt.Errorf("can not find function %s in cache map. Attempted to reload cache failed. %v", functionName, err)
+		}
+
+		f, ok = d.GetFunction(functionName)
+		if !ok {
+			return nil, fmt.Errorf("can not find function %s in cache map", functionName)
+		}
 	}
 
 	c, ok := (*f.Annotations)[federationProviderNameConstraint]
@@ -73,6 +108,19 @@ func (d *defaultProviderRouting) Resolve(functionName string) (providerURI *url.
 	}
 
 	return pURL, nil
+}
+
+func ensureAnnotation(f *requests.CreateFunctionRequest, defaultValue string) {
+	found := false
+	if f.Annotations != nil {
+		_, found = (*f.Annotations)[federationProviderNameConstraint]
+	} else {
+		f.Annotations = &map[string]string{}
+	}
+
+	if !found {
+		(*f.Annotations)[federationProviderNameConstraint] = defaultValue
+	}
 }
 
 func (d *defaultProviderRouting) matchBasedOnName(v string) *url.URL {

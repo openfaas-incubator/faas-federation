@@ -1,6 +1,7 @@
 GO_FILES?=$$(find . -name '*.go' |grep -v vendor)
 TAG?=latest
 SQUASH?=false
+VERSION?=0.1
 
 default: lint vet build test
 
@@ -27,6 +28,11 @@ build-local:
 .PHONY: up-local
 up: build
 	docker stack deploy federation --compose-file ./docker-compose.yml
+
+.PHONY: push
+push:
+	docker tag ewilde/faas-federation:latest ewilde/faas-federation:${VERSION}
+	docker push ewilde/faas-federation:${VERSION}
 
 .PHONY: release
 release:

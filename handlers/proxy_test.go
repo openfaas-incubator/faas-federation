@@ -24,7 +24,7 @@ func Test_Invoke(t *testing.T) {
 	mux.NewRouter()
 	rr := httptest.NewRecorder()
 
-	providerLookup, err := routing.NewDefaultProviderRouting([]string{"http://provider_a:8082", "http://provider_b:8083"}, "http://provider_a:8082")
+	providerLookup, err := routing.NewDefaultProviderRouting([]string{"http://faas-provider-a:8082", "http://faas-provider-b:8083"}, "http://faas-provider-a:8082")
 	if err != nil {
 		t.Fatal(err)
 	}

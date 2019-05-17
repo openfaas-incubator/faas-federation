@@ -4,6 +4,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -21,18 +22,20 @@ func MakeDeleteHandler(proxy http.HandlerFunc) http.HandlerFunc {
 		defer r.Body.Close()
 
 		body, _ := ioutil.ReadAll(r.Body)
-		request := requests.DeleteFunctionRequest{}
-		if err := json.Unmarshal(body, &request); err != nil {
+		f := requests.DeleteFunctionRequest{}
+		if err := json.Unmarshal(body, &f); err != nil {
 			log.Errorln(err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		if len(request.FunctionName) == 0 {
+		if len(f.FunctionName) == 0 {
 			log.Errorln("can not delete a function, request function name is empty")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
 		pathVars := mux.Vars(r)
 		if pathVars == nil {
@@ -40,10 +43,10 @@ func MakeDeleteHandler(proxy http.HandlerFunc) http.HandlerFunc {
 			pathVars = mux.Vars(r)
 		}
 
-		pathVars["name"] = request.FunctionName
+		pathVars["name"] = f.FunctionName
 		pathVars["params"] = r.URL.Path
 		proxy.ServeHTTP(w, r)
 
-		log.Infof("delete request %s successful", request.FunctionName)
+		log.Infof("delete request %s successful", f.FunctionName)
 	}
 }

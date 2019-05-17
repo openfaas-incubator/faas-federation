@@ -51,6 +51,11 @@ func main() {
 		panic(fmt.Errorf("could not create provider lookup. %v", err))
 	}
 
+	err = providerLookup.ReloadCache()
+	if err != nil {
+		panic(fmt.Errorf("could not reload provider cache. %v", err))
+	}
+
 	proxyFunc := proxy.NewHandlerFunc(cfg.ReadTimeout,
 		handlers.NewFunctionLookup(providerLookup))
 

@@ -13,9 +13,10 @@ import (
 	"github.com/openfaas/faas-provider/proxy"
 )
 
-func Test_Deploy(t *testing.T) {
+// Test_Delete requires `make up` and `cd examples && faas-cli up`
+func Test_Delete(t *testing.T) {
 	acc.PreCheckAcc(t)
-	req, err := http.NewRequest("POST", "/system/functions", bytes.NewBuffer([]byte(echoDeploy)))
+	req, err := http.NewRequest("DELETE", "/system/functions", bytes.NewBuffer([]byte(echoDelete)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,13 +29,18 @@ func Test_Deploy(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	err = providerLookup.ReloadCache()
+	if err != nil {
+		t.Fatalf("error reloading provider cache. %v", err)
+	}
+
 	proxyFunc := proxy.NewHandlerFunc(time.Minute*1, NewFunctionLookup(providerLookup))
 
-	MakeDeployHandler(proxyFunc, providerLookup).ServeHTTP(rr, req)
+	MakeDeleteHandler(proxyFunc).ServeHTTP(rr, req)
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
 }
 
-const echoDeploy = `{"service":"echo-a","image":"ewilde/echo:latest","network":"","envProcess":"./handler","envVars":{},"constraints":null,"secrets":[],"labels":{},"annotations":{},"limits":null,"requests":null,"readOnlyRootFilesystem":false}`
+const echoDelete = `{"functionName":"echo-b"}`

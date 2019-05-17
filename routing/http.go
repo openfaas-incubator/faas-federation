@@ -10,7 +10,7 @@ import (
 // which will be used for sorting the results after they come in
 type Result struct {
 	Index    int
-	Response http.Response
+	Response *http.Response
 	Err      error
 }
 
@@ -46,7 +46,7 @@ func Get(urls []*url.URL, concurrencyLimit int) []Result {
 			// along with the Index so we can sort them later along with
 			// any error that might have occoured
 			res, err := http.Get(u.String())
-			result := &Result{i, *res, err}
+			result := &Result{i, res, err}
 
 			// now we can send the result struct through the resultsChan
 			resultsChan <- result

@@ -75,7 +75,7 @@ spec:
         - name: functions_provider_url
           value: "http://127.0.0.1:8081/"
         - name: direct_functions
-          value: "true"
+          value: "false"
         - name: direct_functions_suffix
           value: "{{ $functionNs }}.svc.{{ .Values.kubernetesDNSDomain }}"
         - name: secret_mount_path
@@ -123,43 +123,47 @@ spec:
         - name: function_namespace
           value: {{ $functionNs | quote }}
         - name: read_timeout
-          value: "{{ .Values.faasnetes.readTimeout }}"
+          value: "{{ .Values.faasfederation.readTimeout }}"
         - name: write_timeout
-          value: "{{ .Values.faasnetes.writeTimeout }}"
+          value: "{{ .Values.faasfederation.writeTimeout }}"
         - name: image_pull_policy
-          value: {{ .Values.faasnetes.imagePullPolicy | quote }}
+          value: {{ .Values.faasfederation.imagePullPolicy | quote }}
         ports:
         - containerPort: 8081
           protocol: TCP
       {{- else }}
-      - name: faas-netes
-        image: {{ .Values.faasnetes.image }}
-        imagePullPolicy: {{ .Values.openFaasImagePullPolicy }}
+      - name: faas-federation
+        image: {{ .Values.faasfederation.image }}
+        imagePullPolicy: {{ .Values.openfaasImagePullPolicy }}
         env:
         - name: port
           value: "8081"
         - name: function_namespace
           value: {{ $functionNs | quote }}
         - name: read_timeout
-          value: "{{ .Values.faasnetes.readTimeout }}"
+          value: "{{ .Values.faasfederation.readTimeout }}"
         - name: write_timeout
-          value: "{{ .Values.faasnetes.writeTimeout }}"
+          value: "{{ .Values.faasfederation.writeTimeout }}"
         - name: image_pull_policy
-          value: {{ .Values.faasnetes.imagePullPolicy | quote }}
+          value: {{ .Values.faasfederation.imagePullPolicy | quote }}
         - name: http_probe
-          value: "{{ .Values.faasnetes.httpProbe }}"
+          value: "{{ .Values.faasfederation.httpProbe }}"
         - name: readiness_probe_initial_delay_seconds
-          value: "{{ .Values.faasnetes.readinessProbe.initialDelaySeconds }}"
+          value: "{{ .Values.faasfederation.readinessProbe.initialDelaySeconds }}"
         - name: readiness_probe_timeout_seconds
-          value: "{{ .Values.faasnetes.readinessProbe.timeoutSeconds }}"
+          value: "{{ .Values.faasfederation.readinessProbe.timeoutSeconds }}"
         - name: readiness_probe_period_seconds
-          value: "{{ .Values.faasnetes.readinessProbe.periodSeconds }}"
+          value: "{{ .Values.faasfederation.readinessProbe.periodSeconds }}"
         - name: liveness_probe_initial_delay_seconds
-          value: "{{ .Values.faasnetes.livenessProbe.initialDelaySeconds }}"
+          value: "{{ .Values.faasfederation.livenessProbe.initialDelaySeconds }}"
         - name: liveness_probe_timeout_seconds
-          value: "{{ .Values.faasnetes.livenessProbe.timeoutSeconds }}"
+          value: "{{ .Values.faasfederation.livenessProbe.timeoutSeconds }}"
         - name: liveness_probe_period_seconds
-          value: "{{ .Values.faasnetes.livenessProbe.periodSeconds }}"
+          value: "{{ .Values.faasfederation.livenessProbe.periodSeconds }}"
+        - name: providers
+          value: "{{ .Values.faasfederation.providers }}"
+        - name: default_provider
+          value: "{{ .Values.faasfederation.default_provider }}"
         ports:
         - containerPort: 8081
           protocol: TCP
