@@ -109,6 +109,10 @@ func Test_reloadCache(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	if len(d.cache) == 0 {
+		t.Error("no items found in cache, check you have deployed examples to localhost:8080")
+	}
+
 	echoAConstraint := (*(d.cache["echo-a"].Annotations))[federationProviderNameConstraint]
 	if echoAConstraint != "faas-provider-a" {
 		t.Errorf("want: faas-provider-a got: %s", echoAConstraint)

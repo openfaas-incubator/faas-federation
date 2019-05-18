@@ -69,7 +69,8 @@ func (d *defaultProviderRouting) ReloadCache() error {
 	for k, v := range result.Providers {
 		for _, f := range v {
 			cf := requestToCreate(f)
-			ensureAnnotation(cf, k)
+			pURL, _ := url.Parse(k)
+			ensureAnnotation(cf, getHostNameWithoutPorts(pURL))
 			d.AddFunction(cf)
 		}
 
