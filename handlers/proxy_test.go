@@ -13,9 +13,10 @@ import (
 	"github.com/openfaas/faas-provider/proxy"
 )
 
-func Test_Deploy(t *testing.T) {
+func Test_Invoke(t *testing.T) {
 	acc.PreCheckAcc(t)
-	req, err := http.NewRequest("POST", "/system/functions", bytes.NewBuffer([]byte(echoDeploy)))
+	req, err := http.NewRequest("POST", "/function/echo-b", bytes.NewBuffer([]byte("Hello World")))
+	req.Header.Add("Content-Type", "text/plain")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,12 +30,9 @@ func Test_Deploy(t *testing.T) {
 	}
 
 	proxyFunc := proxy.NewHandlerFunc(time.Minute*1, NewFunctionLookup(providerLookup))
-
-	MakeDeployHandler(proxyFunc, providerLookup).ServeHTTP(rr, req)
+	MakeProxyHandler(proxyFunc).ServeHTTP(rr, req)
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
 }
-
-const echoDeploy = `{"service":"echo-a","image":"ewilde/echo:latest","network":"","envProcess":"./handler","envVars":{},"constraints":null,"secrets":[],"labels":{},"annotations":{},"limits":null,"requests":null,"readOnlyRootFilesystem":false}`

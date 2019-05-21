@@ -92,7 +92,7 @@ func (r ReadConfig) Read(hasEnv HasEnv) BootstrapConfig {
 }
 
 func (r ReadConfig) ensureRequired() {
-	var required = []string{ "providers", "default_provider"}
+	var required = []string{"providers", "default_provider"}
 
 	for _, v := range required {
 		if _, ok := os.LookupEnv(v); !ok {
@@ -103,9 +103,9 @@ func (r ReadConfig) ensureRequired() {
 
 // BootstrapConfig for the process.
 type BootstrapConfig struct {
-	Port                         int
-	ReadTimeout                  time.Duration
-	WriteTimeout                 time.Duration
-	Providers                    []string
-	DefaultProvider              string
+	Port            int
+	ReadTimeout     time.Duration
+	WriteTimeout    time.Duration
+	Providers       []string
+	DefaultProvider string
 }

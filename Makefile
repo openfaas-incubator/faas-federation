@@ -1,8 +1,9 @@
 GO_FILES?=$$(find . -name '*.go' |grep -v vendor)
 TAG?=latest
 SQUASH?=false
+VERSION?=0.1
 
-default: install build-resources lint vet build test testacc
+default: lint vet build test
 
 .PHONY: test
 test: goimportscheck
@@ -28,6 +29,11 @@ build-local:
 up: build
 	docker stack deploy federation --compose-file ./docker-compose.yml
 
+.PHONY: push
+push:
+	docker tag ewilde/faas-federation:latest ewilde/faas-federation:${VERSION}
+	docker push ewilde/faas-federation:${VERSION}
+
 .PHONY: release
 release:
 	go get github.com/goreleaser/goreleaser; \
@@ -48,7 +54,7 @@ goimportscheck:
 .PHONY: vet
 vet:
 	@echo "go vet ."
-	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
+	@go vet $$(go list ./... | grep -v vendor/ | grep -v examples/) ; if [ $$? -eq 1 ]; then \
 		echo ""; \
 		echo "Vet found suspicious constructs. Please check the reported constructs"; \
 		echo "and fix them if necessary before submitting the code for review."; \

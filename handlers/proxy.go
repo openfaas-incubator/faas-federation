@@ -7,30 +7,35 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
-	"github.com/ewilde/faas-federation/routing"
 	"github.com/gorilla/mux"
+
+	"github.com/ewilde/faas-federation/routing"
 	log "github.com/sirupsen/logrus"
 )
 
 const urlScheme = "http"
 
-// MakeProxy creates a proxy for HTTP web requests which can be routed to a function.
-func MakeProxy() http.HandlerFunc {
+// MakeProxyHandler creates a handler to invoke functions downstream
+func MakeProxyHandler(proxy http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		name := vars["name"]
 
-		v, okay := functions[name]
-		if !okay {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("{ \"status\" : \"Not found\"}"))
+		log.Info("proxy request")
+
+		pathVars := mux.Vars(r)
+		if pathVars == nil {
+			r = mux.SetURLVars(r, map[string]string{})
+			pathVars = mux.Vars(r)
 		}
 
-		v.InvocationCount = v.InvocationCount + 1
-		responseBody := "{ \"status\" : \"Okay\"}"
-		w.Write([]byte(responseBody))
+		functionName := strings.Split(r.URL.Path, "/")[2]
+		pathVars["name"] = functionName
+		pathVars["params"] = r.URL.Path
+		proxy.ServeHTTP(w, r)
+
+		log.Infof("proxy request for function %s path %s", functionName, r.URL.String())
 	}
 }
 
@@ -56,13 +61,13 @@ func NewFunctionLookup(providerLookup routing.ProviderLookup) *FunctionLookup {
 
 // Resolve implements the openfaas-provider proxy.BaseURLResolver interface.
 func (l *FunctionLookup) Resolve(name string) (u url.URL, err error) {
-	log.Infof("resolving %s", name)
+	log.Infof("resolving function %s", name)
 	providerURL, err := l.providerLookup.Resolve(name)
 	if err != nil {
 		return url.URL{}, err
 	}
 
-	log.Infof("using provider %s to resolve to", providerURL.String())
+	log.Infof("using provider %s to for function %s", providerURL.String(), name)
 
 	return *providerURL, nil
 }

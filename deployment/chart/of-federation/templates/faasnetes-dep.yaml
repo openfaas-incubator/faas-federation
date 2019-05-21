@@ -1,0 +1,91 @@
+{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
+apiVersion: apps/v1beta1 # for versions before 1.6.0 use extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ template "openfaas.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    component: faasnetes
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: faasnetes
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  replicas: {{ .Values.faasnetes.replicas }}
+  template:
+    metadata:
+      labels:
+        app: faasnetes
+    spec:
+      {{- if .Values.operator.create }}
+      serviceAccountName: {{ .Release.Name }}-operator
+      {{- else }}
+      serviceAccountName: {{ .Release.Name }}-controller
+      {{- end }}
+      volumes:
+      containers:
+      {{- if .Values.operator.create }}
+      - name: operator
+        image: {{ .Values.operator.image }}
+        imagePullPolicy: {{ .Values.openfaasImagePullPolicy }}
+        command:
+          - ./openfaas-operator
+          - -logtostderr
+          - -v=2
+        env:
+          - name: function_namespace
+            value: {{ $functionNs | quote }}
+          - name: read_timeout
+            value: "{{ .Values.faasnetes.readTimeout }}"
+          - name: write_timeout
+            value: "{{ .Values.faasnetes.writeTimeout }}"
+          - name: image_pull_policy
+            value: {{ .Values.faasnetes.imagePullPolicy | quote }}
+        ports:
+          - containerPort: 8081
+            protocol: TCP
+      {{- else }}
+      - name: faas-netes
+        image: {{ .Values.faasnetes.image }}
+        imagePullPolicy: {{ .Values.openfaasImagePullPolicy }}
+        env:
+          - name: port
+            value: "8080"
+          - name: function_namespace
+            value: {{ $functionNs | quote }}
+          - name: read_timeout
+            value: "{{ .Values.faasnetes.readTimeout }}"
+          - name: write_timeout
+            value: "{{ .Values.faasnetes.writeTimeout }}"
+          - name: image_pull_policy
+            value: {{ .Values.faasnetes.imagePullPolicy | quote }}
+          - name: http_probe
+            value: "{{ .Values.faasnetes.httpProbe }}"
+          - name: readiness_probe_initial_delay_seconds
+            value: "{{ .Values.faasnetes.readinessProbe.initialDelaySeconds }}"
+          - name: readiness_probe_timeout_seconds
+            value: "{{ .Values.faasnetes.readinessProbe.timeoutSeconds }}"
+          - name: readiness_probe_period_seconds
+            value: "{{ .Values.faasnetes.readinessProbe.periodSeconds }}"
+          - name: liveness_probe_initial_delay_seconds
+            value: "{{ .Values.faasnetes.livenessProbe.initialDelaySeconds }}"
+          - name: liveness_probe_timeout_seconds
+            value: "{{ .Values.faasnetes.livenessProbe.timeoutSeconds }}"
+          - name: liveness_probe_period_seconds
+            value: "{{ .Values.faasnetes.livenessProbe.periodSeconds }}"
+        ports:
+          - containerPort: 8080
+            protocol: TCP
+      {{- end }}
+    {{- with .Values.nodeSelector }}
+    nodeSelector:
+  {{ toYaml . | indent 8 }}
+  {{- end }}
+  {{- with .Values.affinity }}
+affinity:
+  {{ toYaml . | indent 8 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+tolerations:
+  {{ toYaml . | indent 8 }}
+  {{- end }}

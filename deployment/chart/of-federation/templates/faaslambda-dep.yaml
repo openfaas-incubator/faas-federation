@@ -1,0 +1,84 @@
+{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
+apiVersion: apps/v1beta1 # for versions before 1.6.0 use extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ template "openfaas.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    component: faaslambda
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: faaslambda
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  replicas: {{ .Values.faaslambda.replicas }}
+  template:
+    metadata:
+      labels:
+        app: faaslambda
+    spec:
+      serviceAccountName: {{ .Release.Name }}-controller
+      volumes:
+      - name: lambda-aws-access
+        secret:
+          secretName: lambda-aws-access
+      containers:
+      - name: faaslambda
+        image: {{ .Values.faaslambda.image }}
+        imagePullPolicy: {{ .Values.openfaasImagePullPolicy }}
+        env:
+          - name: port
+            value: "8080"
+          - name: function_namespace
+            value: {{ $functionNs | quote }}
+          - name: read_timeout
+            value: "{{ .Values.faaslambda.readTimeout }}"
+          - name: write_timeout
+            value: "{{ .Values.faaslambda.writeTimeout }}"
+          - name: image_pull_policy
+            value: {{ .Values.faaslambda.imagePullPolicy | quote }}
+          - name: http_probe
+            value: "{{ .Values.faaslambda.httpProbe }}"
+          - name: secret_mount_path
+            value: "/var/secrets"
+          - name: readiness_probe_initial_delay_seconds
+            value: "{{ .Values.faaslambda.readinessProbe.initialDelaySeconds }}"
+          - name: readiness_probe_timeout_seconds
+            value: "{{ .Values.faaslambda.readinessProbe.timeoutSeconds }}"
+          - name: readiness_probe_period_seconds
+            value: "{{ .Values.faaslambda.readinessProbe.periodSeconds }}"
+          - name: liveness_probe_initial_delay_seconds
+            value: "{{ .Values.faaslambda.livenessProbe.initialDelaySeconds }}"
+          - name: liveness_probe_timeout_seconds
+            value: "{{ .Values.faaslambda.livenessProbe.timeoutSeconds }}"
+          - name: liveness_probe_period_seconds
+            value: "{{ .Values.faaslambda.livenessProbe.periodSeconds }}"
+          - name: lambda_execution_role
+            value: "{{ .Values.faaslambda.lambda_execution_role }}"
+          - name: AWS_REGION
+            value: "{{ .Values.faaslambda.aws_region }}"
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: lambda-aws-access
+                key: AWS_ACCESS_KEY_ID
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: lambda-aws-access
+                key: AWS_SECRET_ACCESS_KEY
+        ports:
+          - containerPort: 8080
+            protocol: TCP
+    {{- with .Values.nodeSelector }}
+    nodeSelector:
+  {{ toYaml . | indent 8 }}
+  {{- end }}
+  {{- with .Values.affinity }}
+affinity:
+  {{ toYaml . | indent 8 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+tolerations:
+  {{ toYaml . | indent 8 }}
+  {{- end }}

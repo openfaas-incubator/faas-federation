@@ -4,36 +4,49 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/gorilla/mux"
 
 	"github.com/openfaas/faas/gateway/requests"
 	log "github.com/sirupsen/logrus"
 )
 
 // MakeDeleteHandler delete a function
-func MakeDeleteHandler() http.HandlerFunc {
+func MakeDeleteHandler(proxy http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Info("delete request")
 		defer r.Body.Close()
 
 		body, _ := ioutil.ReadAll(r.Body)
-		request := requests.DeleteFunctionRequest{}
-		if err := json.Unmarshal(body, &request); err != nil {
+		f := requests.DeleteFunctionRequest{}
+		if err := json.Unmarshal(body, &f); err != nil {
 			log.Errorln(err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		if len(request.FunctionName) == 0 {
+		if len(f.FunctionName) == 0 {
 			log.Errorln("can not delete a function, request function name is empty")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		delete(functions, request.FunctionName)
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
-		log.Infof("delete request %s successful", request.FunctionName)
+		pathVars := mux.Vars(r)
+		if pathVars == nil {
+			r = mux.SetURLVars(r, map[string]string{})
+			pathVars = mux.Vars(r)
+		}
+
+		pathVars["name"] = f.FunctionName
+		pathVars["params"] = r.URL.Path
+		proxy.ServeHTTP(w, r)
+
+		log.Infof("delete request %s successful", f.FunctionName)
 	}
 }

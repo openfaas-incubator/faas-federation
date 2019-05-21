@@ -16,8 +16,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var functions = map[string]*requests.Function{}
-
 // MakeDeployHandler creates a handler to create new functions in the cluster
 func MakeDeployHandler(proxy http.HandlerFunc, providerLookup routing.ProviderLookup) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

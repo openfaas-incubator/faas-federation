@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/ewilde/faas-federation/handlers"
 	"github.com/ewilde/faas-federation/routing"
 	"github.com/ewilde/faas-federation/types"
 	"github.com/ewilde/faas-federation/version"
-	"github.com/openfaas/faas-provider"
+	bootstrap "github.com/openfaas/faas-provider"
 	"github.com/openfaas/faas-provider/proxy"
-	"os"
-	"strings"
 
 	bootTypes "github.com/openfaas/faas-provider/types"
 	log "github.com/sirupsen/logrus"
@@ -45,22 +46,27 @@ func main() {
 	osEnv := types.OsEnv{}
 	cfg := readConfig.Read(osEnv)
 
-	providerLookup, err :=routing.NewDefaultProviderRouting(cfg.Providers, cfg.DefaultProvider)
+	providerLookup, err := routing.NewDefaultProviderRouting(cfg.Providers, cfg.DefaultProvider)
 	if err != nil {
 		panic(fmt.Errorf("could not create provider lookup. %v", err))
+	}
+
+	err = providerLookup.ReloadCache()
+	if err != nil {
+		panic(fmt.Errorf("could not reload provider cache. %v", err))
 	}
 
 	proxyFunc := proxy.NewHandlerFunc(cfg.ReadTimeout,
 		handlers.NewFunctionLookup(providerLookup))
 
 	bootstrapHandlers := bootTypes.FaaSHandlers{
-		FunctionProxy:  proxyFunc,
-		DeleteHandler:  proxyFunc,
+		FunctionProxy:  handlers.MakeProxyHandler(proxyFunc),
+		DeleteHandler:  handlers.MakeDeleteHandler(proxyFunc),
 		DeployHandler:  handlers.MakeDeployHandler(proxyFunc, providerLookup),
-		FunctionReader: handlers.MakeFunctionReader(),
+		FunctionReader: handlers.MakeFunctionReader(cfg.Providers),
 		ReplicaReader:  handlers.MakeReplicaReader(),
 		ReplicaUpdater: handlers.MakeReplicaUpdater(),
-		UpdateHandler:  proxyFunc,
+		UpdateHandler:  handlers.MakeUpdateHandler(proxyFunc, providerLookup),
 		HealthHandler:  handlers.MakeHealthHandler(),
 		InfoHandler:    handlers.MakeInfoHandler(version.BuildVersion(), version.GitCommitSHA),
 	}
