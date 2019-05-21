@@ -13,9 +13,5 @@ keywords:
 maintainers:
 - name: alexellis
   email: alex@openfaas.com
-- name: lucasroesler
-  email: roesler.lucas@gmail.com
-- name: stefanprodan
-  email: stefan.prodan@gmail.com
-- name: rimusz
-  email: rmocius@gmail.com
+- name: ewilde
+  email: ewilde@gmail.com
