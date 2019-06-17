@@ -59,6 +59,8 @@ faaslambda:
     timeoutSeconds: 1
     periodSeconds: 10
   lambda_execution_role: ""
+  licence_jwt: ""
+  licence_email: ""
   aws_region: "eu-west-1"
 
 gateway:

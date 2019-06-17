@@ -19,6 +19,11 @@ spec:
     spec:
       serviceAccountName: {{ .Release.Name }}-controller
       volumes:
+      {{- if .Values.basic_auth }}
+      - name: auth
+        secret:
+          secretName: basic-auth
+      {{- end }}
       - name: lambda-aws-access
         secret:
           secretName: lambda-aws-access
@@ -41,6 +46,10 @@ spec:
             value: "{{ .Values.faaslambda.httpProbe }}"
           - name: secret_mount_path
             value: "/var/secrets"
+          {{- if .Values.basic_auth }}
+          - name: basic_auth
+            value: "{{ .Values.basic_auth }}"
+          {{- end }}
           - name: readiness_probe_initial_delay_seconds
             value: "{{ .Values.faaslambda.readinessProbe.initialDelaySeconds }}"
           - name: readiness_probe_timeout_seconds
@@ -55,6 +64,10 @@ spec:
             value: "{{ .Values.faaslambda.livenessProbe.periodSeconds }}"
           - name: lambda_execution_role
             value: "{{ .Values.faaslambda.lambda_execution_role }}"
+          - name: licence_jwt
+            value: "{{ .Values.faaslambda.licence_jwt }}"
+          - name: licence_email
+            value: "{{ .Values.faaslambda.licence_email }}"
           - name: AWS_REGION
             value: "{{ .Values.faaslambda.aws_region }}"
           - name: AWS_ACCESS_KEY_ID
@@ -67,6 +80,12 @@ spec:
               secretKeyRef:
                 name: lambda-aws-access
                 key: AWS_SECRET_ACCESS_KEY
+        {{- if .Values.basic_auth }}
+        volumeMounts:
+        - name: auth
+          readOnly: true
+          mountPath: "/var/secrets"
+        {{- end }}
         ports:
           - containerPort: 8080
             protocol: TCP
