@@ -1,7 +1,7 @@
 GO_FILES?=$$(find . -name '*.go' |grep -v vendor)
 TAG?=latest
 SQUASH?=false
-VERSION?=0.1
+VERSION?=0.1.1
 
 default: lint vet build test
 

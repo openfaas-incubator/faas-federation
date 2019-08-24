@@ -1,4 +1,4 @@
-FROM golang:1.10.4 as build
+FROM golang:1.11 as build
 
 RUN mkdir -p /go/src/github.com/ewilde/faas-federation/
 
@@ -28,7 +28,7 @@ RUN gofmt -l -d $(find . -type f -name '*.go' -not -path "./vendor/*") \
     -a -installsuffix cgo -o faas-federation .
 
 # Release stage
-FROM alpine:3.8
+FROM alpine:3.10 as ship
 
 LABEL org.label-schema.license="MIT" \
       org.label-schema.vcs-url="https://github.com/openfaas/faas-federation" \
