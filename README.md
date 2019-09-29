@@ -33,11 +33,13 @@ Coming soon: deploy OpenFaaS with two separate [`faas-memory`](https://github.co
 
 See also: example of Kubernetes and AWS Lambda federated configuration in the sample [helm chart](chart/of-federation).
 
-## Constraints
+## Gateway routing
+
+To route to one gateway or another, simply set `com.openfaas.federation.gateway` to the name you want to pick.
 
 | Annotation | Description |
 | ----|----|
-| federation.provider_name | route the request based on the provider name i.e. `kubernetes`, `swarm` |
+| `com.openfaas.federation.gateway` | route the request based on the provider name i.e. `faas-netes`, `faas-lambda` |
 
 ## Configuration
 
