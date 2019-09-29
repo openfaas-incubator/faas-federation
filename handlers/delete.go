@@ -10,8 +10,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-
 	"github.com/openfaas/faas/gateway/requests"
+
 	log "github.com/sirupsen/logrus"
 )
 

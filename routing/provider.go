@@ -55,7 +55,8 @@ func NewDefaultProviderRouting(providers []string, defaultProvider string) (Prov
 }
 
 func (d *defaultProviderRouting) ReloadCache() error {
-	log.Info("reloading cache starting...")
+	log.Info("reloading cache started...")
+
 	var urls []string
 	for _, v := range d.providers {
 		urls = append(urls, v.String())
@@ -83,6 +84,7 @@ func (d *defaultProviderRouting) ReloadCache() error {
 
 func (d *defaultProviderRouting) Resolve(functionName string) (providerURI *url.URL, err error) {
 	f, ok := d.GetFunction(functionName)
+
 	if !ok {
 		log.Warnf("can not find function %s in cache map, will attempt cache reload", functionName)
 		if err := d.ReloadCache(); err != nil {
@@ -94,6 +96,8 @@ func (d *defaultProviderRouting) Resolve(functionName string) (providerURI *url.
 			return nil, fmt.Errorf("can not find function %s in cache map", functionName)
 		}
 	}
+
+	log.Infof("Fn: %s, annotations: %v", functionName, f.Annotations)
 
 	c, ok := (*f.Annotations)[federationProviderNameConstraint]
 	if !ok {
@@ -126,6 +130,7 @@ func ensureAnnotation(f *types.FunctionDeployment, defaultValue string) {
 
 func (d *defaultProviderRouting) matchBasedOnName(v string) *url.URL {
 	for _, u := range d.providers {
+
 		if strings.EqualFold(getHostNameWithoutPorts(u), v) {
 			return u
 		}
@@ -135,7 +140,8 @@ func (d *defaultProviderRouting) matchBasedOnName(v string) *url.URL {
 }
 
 func getHostNameWithoutPorts(v *url.URL) string {
-	return strings.Split(v.Host, ":")[0]
+	// return strings.Split(v.Host, ":")[0]
+	return v.String()
 }
 
 func (d *defaultProviderRouting) AddFunction(f *types.FunctionDeployment) {

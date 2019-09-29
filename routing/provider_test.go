@@ -28,8 +28,8 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 			name: "provider a is resolved",
 			fields: fields{
 				cache: map[string]*types.FunctionDeployment{
-					"echo": {Service: "echo", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-a"}},
-					"cat":  {Service: "cat", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-b"}},
+					"echo": {Service: "echo", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-a:8080"}},
+					"cat":  {Service: "cat", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-b:8080"}},
 				},
 				providers: map[string]*url.URL{
 					"faas-provider-a": parseURL("http://faas-provider-a:8080"),
@@ -42,12 +42,12 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 			name: "provider b is resolved",
 			fields: fields{
 				cache: map[string]*types.FunctionDeployment{
-					"echo": {Service: "echo", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-a"}},
-					"cat":  {Service: "cat", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-b"}},
+					"echo": {Service: "echo", Annotations: &map[string]string{federationProviderNameConstraint: "http://faas-provider-a:8080"}},
+					"cat":  {Service: "cat", Annotations: &map[string]string{federationProviderNameConstraint: "http://faas-provider-b:8080"}},
 				},
 				providers: map[string]*url.URL{
-					"faas-provider-a": parseURL("http://faas-provider-a:8080"),
-					"faas-provider-b": parseURL("http://faas-provider-b:8080"),
+					"http://faas-provider-a:8080": parseURL("http://faas-provider-a:8080"),
+					"http://faas-provider-b:8080": parseURL("http://faas-provider-b:8080"),
 				},
 				defaultProvider: "http://faas-provider-a:8080",
 			}, args: args{functionName: "cat"}, wantProviderHostName: "faas-provider-b:8080", wantErr: false,
@@ -56,7 +56,7 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 			name: "default provider is resolved, when constraint is missing",
 			fields: fields{
 				cache: map[string]*types.FunctionDeployment{
-					"echo": {Service: "echo", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-a"}},
+					"echo": {Service: "echo", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-a:8080"}},
 					"cat":  {Service: "cat", Annotations: &map[string]string{}},
 				},
 				providers: map[string]*url.URL{

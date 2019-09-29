@@ -26,7 +26,11 @@ func ReadServices(providers []string) (*ReadServicesResult, error) {
 	}
 
 	results := Get(urls, len(providers))
-	serviceResult := &ReadServicesResult{Providers: map[string][]*types.FunctionStatus{}}
+
+	serviceResult := &ReadServicesResult{
+		Providers: map[string][]*types.FunctionStatus{},
+	}
+
 	for _, v := range results {
 		if v.Err != nil {
 			log.Errorf("error fetching function list for %s. %v", providers[v.Index], v.Err)
@@ -34,7 +38,8 @@ func ReadServices(providers []string) (*ReadServicesResult, error) {
 		}
 
 		if v.Response.StatusCode > 399 {
-			log.Errorf("unexpected error code %d while fetching function list for %s. %v", v.Response.StatusCode, providers[v.Index], v.Err)
+			log.Errorf("unexpected error code %d while fetching function list for %s. %v",
+				v.Response.StatusCode, providers[v.Index], v.Err)
 			break
 		}
 
@@ -44,7 +49,8 @@ func ReadServices(providers []string) (*ReadServicesResult, error) {
 			return nil, fmt.Errorf("error reading response for %s. %v", providers[v.Index], err)
 		}
 
-		_ = v.Response.Body.Close()
+		defer v.Response.Body.Close()
+
 		err = json.Unmarshal(functionBytes, &function)
 		if err != nil {
 			return nil, fmt.Errorf("error unmarshalling response for %s. %v", providers[v.Index], err)
@@ -56,24 +62,24 @@ func ReadServices(providers []string) (*ReadServicesResult, error) {
 	return serviceResult, nil
 }
 
-func createToRequest(request *types.FunctionDeployment) *types.FunctionStatus {
-	return &types.FunctionStatus{
-		Name:              request.Service,
-		Annotations:       request.Annotations,
-		EnvProcess:        request.EnvProcess,
-		Image:             request.Image,
-		Labels:            request.Labels,
-		AvailableReplicas: 1,
-		Replicas:          1,
-	}
-}
+// func createToRequest(request *types.FunctionDeployment) *types.FunctionStatus {
+// 	return &types.FunctionStatus{
+// 		Name:              request.Service,
+// 		Annotations:       request.Annotations,
+// 		EnvProcess:        request.EnvProcess,
+// 		Image:             request.Image,
+// 		Labels:            request.Labels,
+// 		AvailableReplicas: 1,
+// 		Replicas:          1,
+// 	}
+// }
 
 func requestToCreate(f *types.FunctionStatus) *types.FunctionDeployment {
 	return &types.FunctionDeployment{
 		Service:     f.Name,
-		Annotations: f.Annotations,
-		Labels:      f.Labels,
 		Image:       f.Image,
 		EnvProcess:  f.EnvProcess,
+		Annotations: f.Annotations,
+		Labels:      f.Labels,
 	}
 }

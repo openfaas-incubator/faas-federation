@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/openfaas-incubator/faas-federation/routing"
 	types "github.com/openfaas/faas-provider/types"
 	log "github.com/sirupsen/logrus"
 )
@@ -21,16 +22,25 @@ func MakeReplicaUpdater() http.HandlerFunc {
 }
 
 // MakeReplicaReader reads the amount of replicas for a deployment
-func MakeReplicaReader() http.HandlerFunc {
+func MakeReplicaReader(provider routing.ProviderLookup) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Info("read replicas")
 
 		vars := mux.Vars(r)
 		functionName := vars["name"]
 
+		res, ok := provider.GetFunction(functionName)
+
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
 		found := &types.FunctionStatus{}
 		found.Name = functionName
 		found.AvailableReplicas = 1
+		found.Annotations = res.Annotations
+		found.Labels = res.Labels
 
 		functionBytes, _ := json.Marshal(found)
 		w.Header().Set("Content-Type", "application/json")

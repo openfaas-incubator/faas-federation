@@ -33,9 +33,8 @@ func MakeProxyHandler(proxy http.HandlerFunc) http.HandlerFunc {
 		functionName := strings.Split(r.URL.Path, "/")[2]
 		pathVars["name"] = functionName
 		pathVars["params"] = r.URL.Path
+		log.Infof("proxy request to: %s %s", functionName, r.URL.String())
 		proxy.ServeHTTP(w, r)
-
-		log.Infof("proxy request for function %s path %s", functionName, r.URL.String())
 	}
 }
 

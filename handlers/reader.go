@@ -18,6 +18,7 @@ func MakeFunctionReader(providers []string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		log.Info("read request")
+
 		functions, err := routing.ReadServices(providers)
 		if err != nil {
 			log.Printf("Error getting service list: %s\n", err.Error())
@@ -34,6 +35,7 @@ func MakeFunctionReader(providers []string) http.HandlerFunc {
 
 		functionBytes, _ := json.Marshal(result)
 		w.Header().Set("Content-Type", "application/json")
+
 		w.WriteHeader(http.StatusOK)
 		w.Write(functionBytes)
 	}
