@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ewilde/faas-federation/routing"
-	acc "github.com/ewilde/faas-federation/testing"
 	"github.com/gorilla/mux"
+	"github.com/openfaas-incubator/faas-federation/routing"
+	acc "github.com/openfaas-incubator/faas-federation/testing"
 	"github.com/openfaas/faas-provider/proxy"
 )
 
@@ -37,4 +37,4 @@ func Test_Deploy(t *testing.T) {
 	}
 }
 
-const echoDeploy = `{"service":"echo-a","image":"ewilde/echo:latest","network":"","envProcess":"./handler","envVars":{},"constraints":null,"secrets":[],"labels":{},"annotations":{},"limits":null,"requests":null,"readOnlyRootFilesystem":false}`
+const echoDeploy = `{"service":"echo-a","image":"openfaas/echo:latest","network":"","envProcess":"./handler","envVars":{},"constraints":null,"secrets":[],"labels":{},"annotations":{},"limits":null,"requests":null,"readOnlyRootFilesystem":false}`

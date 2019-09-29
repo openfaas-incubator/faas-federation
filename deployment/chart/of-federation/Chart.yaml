@@ -13,5 +13,5 @@ keywords:
 maintainers:
 - name: alexellis
   email: alex@openfaas.com
-- name: ewilde
-  email: ewilde@gmail.com
+- name: openfaas
+  email: openfaas@gmail.com

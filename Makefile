@@ -15,14 +15,14 @@ testacc: goimportscheck
 
 .PHONY: build
 build:
-	docker build -t ewilde/faas-federation:$(TAG) . --squash=${SQUASH}
+	docker build -t openfaas/faas-federation:$(TAG) . --squash=${SQUASH}
 
 .PHONY: build-local
 build-local:
 	go build --ldflags "-s -w \
-        -X github.com/ewilde/faas-federation/version.GitCommitSHA=${GIT_COMMIT_SHA} \
-        -X \"github.com/ewilde/faas-federation/version.GitCommitMessage=${GIT_COMMIT_MESSAGE}\" \
-        -X github.com/ewilde/faas-federation/version.Version=${VERSION}" \
+        -X github.com/openfaas-incubator/faas-federation/version.GitCommitSHA=${GIT_COMMIT_SHA} \
+        -X \"github.com/openfaas-incubator/faas-federation/version.GitCommitMessage=${GIT_COMMIT_MESSAGE}\" \
+        -X github.com/openfaas-incubator/faas-federation/version.Version=${VERSION}" \
         -o faas-federation .
 
 .PHONY: up-local
@@ -31,8 +31,8 @@ up: build
 
 .PHONY: push
 push:
-	docker tag ewilde/faas-federation:latest ewilde/faas-federation:${VERSION}
-	docker push ewilde/faas-federation:${VERSION}
+	docker tag openfaas/faas-federation:latest openfaas/faas-federation:${VERSION}
+	docker push openfaas/faas-federation:${VERSION}
 
 .PHONY: release
 release:

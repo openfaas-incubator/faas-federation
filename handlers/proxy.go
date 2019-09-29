@@ -12,7 +12,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/ewilde/faas-federation/routing"
+	"github.com/openfaas-incubator/faas-federation/routing"
 	log "github.com/sirupsen/logrus"
 )
 

@@ -10,9 +10,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/ewilde/faas-federation/routing"
+	types "github.com/openfaas/faas-provider/types"
+
 	"github.com/gorilla/mux"
-	"github.com/openfaas/faas/gateway/requests"
+	"github.com/openfaas-incubator/faas-federation/routing"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -35,7 +36,7 @@ func MakeDeployHandler(proxy http.HandlerFunc, providerLookup routing.ProviderLo
 	}
 }
 
-func proxyDeployment(proxy http.HandlerFunc, function *requests.CreateFunctionRequest, w http.ResponseWriter, r *http.Request) {
+func proxyDeployment(proxy http.HandlerFunc, function *types.FunctionDeployment, w http.ResponseWriter, r *http.Request) {
 	pathVars := mux.Vars(r)
 	if pathVars == nil {
 		r = mux.SetURLVars(r, map[string]string{})
@@ -47,11 +48,11 @@ func proxyDeployment(proxy http.HandlerFunc, function *requests.CreateFunctionRe
 	proxy.ServeHTTP(w, r)
 }
 
-func addToFunctionToCache(r *http.Request, providerLookup routing.ProviderLookup) (*requests.CreateFunctionRequest, error) {
+func addToFunctionToCache(r *http.Request, providerLookup routing.ProviderLookup) (*types.FunctionDeployment, error) {
 	defer r.Body.Close()
 	body, _ := ioutil.ReadAll(r.Body)
 
-	request := &requests.CreateFunctionRequest{}
+	request := &types.FunctionDeployment{}
 	if err := json.Unmarshal(body, &request); err != nil {
 		return nil, fmt.Errorf("error during unmarshal of create function request. %v", err)
 	}

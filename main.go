@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ewilde/faas-federation/handlers"
-	"github.com/ewilde/faas-federation/routing"
-	"github.com/ewilde/faas-federation/types"
-	"github.com/ewilde/faas-federation/version"
+	"github.com/openfaas-incubator/faas-federation/handlers"
+	"github.com/openfaas-incubator/faas-federation/routing"
+	"github.com/openfaas-incubator/faas-federation/types"
+	"github.com/openfaas-incubator/faas-federation/version"
 	bootstrap "github.com/openfaas/faas-provider"
 	"github.com/openfaas/faas-provider/proxy"
 
@@ -40,7 +40,7 @@ func init() {
 
 func main() {
 
-	log.Infof("faas-federation version:%s. Last commit message: %s, commit SHA: %s'", version.BuildVersion(), version.GitCommitMessage, version.GitCommitSHA)
+	log.Infof("faas-federation version: %s. Last commit message: %s, commit SHA: %s", version.BuildVersion(), version.GitCommitMessage, version.GitCommitSHA)
 
 	readConfig := types.ReadConfig{}
 	osEnv := types.OsEnv{}
@@ -48,12 +48,12 @@ func main() {
 
 	providerLookup, err := routing.NewDefaultProviderRouting(cfg.Providers, cfg.DefaultProvider)
 	if err != nil {
-		panic(fmt.Errorf("could not create provider lookup. %v", err))
+		panic(fmt.Errorf("could not create provider lookup, error: %v", err))
 	}
 
 	err = providerLookup.ReloadCache()
 	if err != nil {
-		panic(fmt.Errorf("could not reload provider cache. %v", err))
+		panic(fmt.Errorf("could not reload provider cache, error: %v", err))
 	}
 
 	proxyFunc := proxy.NewHandlerFunc(cfg.ReadTimeout,

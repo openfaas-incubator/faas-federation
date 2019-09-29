@@ -96,7 +96,7 @@ func (r ReadConfig) ensureRequired() {
 
 	for _, v := range required {
 		if _, ok := os.LookupEnv(v); !ok {
-			panic(fmt.Sprintf("%s environment variable must be set, please see README.md", v))
+			panic(fmt.Sprintf("the environment variable `%s` must be set", v))
 		}
 	}
 }

@@ -4,13 +4,13 @@ import (
 	"net/url"
 	"testing"
 
-	acc "github.com/ewilde/faas-federation/testing"
-	"github.com/openfaas/faas/gateway/requests"
+	acc "github.com/openfaas-incubator/faas-federation/testing"
+	types "github.com/openfaas/faas-provider/types"
 )
 
 func Test_defaultProviderRouting_Resolve(t *testing.T) {
 	type fields struct {
-		cache           map[string]*requests.CreateFunctionRequest
+		cache           map[string]*types.FunctionDeployment
 		providers       map[string]*url.URL
 		defaultProvider string
 	}
@@ -27,7 +27,7 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 		{
 			name: "provider a is resolved",
 			fields: fields{
-				cache: map[string]*requests.CreateFunctionRequest{
+				cache: map[string]*types.FunctionDeployment{
 					"echo": {Service: "echo", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-a"}},
 					"cat":  {Service: "cat", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-b"}},
 				},
@@ -41,7 +41,7 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 		{
 			name: "provider b is resolved",
 			fields: fields{
-				cache: map[string]*requests.CreateFunctionRequest{
+				cache: map[string]*types.FunctionDeployment{
 					"echo": {Service: "echo", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-a"}},
 					"cat":  {Service: "cat", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-b"}},
 				},
@@ -55,7 +55,7 @@ func Test_defaultProviderRouting_Resolve(t *testing.T) {
 		{
 			name: "default provider is resolved, when constraint is missing",
 			fields: fields{
-				cache: map[string]*requests.CreateFunctionRequest{
+				cache: map[string]*types.FunctionDeployment{
 					"echo": {Service: "echo", Annotations: &map[string]string{federationProviderNameConstraint: "faas-provider-a"}},
 					"cat":  {Service: "cat", Annotations: &map[string]string{}},
 				},
@@ -101,7 +101,7 @@ func Test_reloadCache(t *testing.T) {
 			"faas-provider-b": parseURL("http://faas-provider-b:8083"),
 		},
 		defaultProvider: parseURL("http://faas-provider-a:8083"),
-		cache:           map[string]*requests.CreateFunctionRequest{},
+		cache:           map[string]*types.FunctionDeployment{},
 	}
 
 	err := d.ReloadCache()
@@ -127,7 +127,7 @@ func parseURL(v string) *url.URL {
 
 func Test_ensureAnnotation(t *testing.T) {
 	type args struct {
-		f            *requests.CreateFunctionRequest
+		f            *types.FunctionDeployment
 		defaultValue string
 		expected     string
 	}
@@ -139,7 +139,7 @@ func Test_ensureAnnotation(t *testing.T) {
 			name: "annotation is present",
 			args: args{
 				defaultValue: "http://provider-c:8080",
-				f: &requests.CreateFunctionRequest{
+				f: &types.FunctionDeployment{
 					Annotations: &map[string]string{federationProviderNameConstraint: "http://provider-b:8080"},
 				},
 				expected: "http://provider-b:8080",
@@ -149,7 +149,7 @@ func Test_ensureAnnotation(t *testing.T) {
 			name: "annotation is missing, have other annotations. expect default value",
 			args: args{
 				defaultValue: "http://provider-c:8080",
-				f: &requests.CreateFunctionRequest{
+				f: &types.FunctionDeployment{
 					Annotations: &map[string]string{"bill": "ben"},
 				},
 				expected: "http://provider-c:8080",
@@ -159,7 +159,7 @@ func Test_ensureAnnotation(t *testing.T) {
 			name: "annotation is missing, have no annotations. expect default value",
 			args: args{
 				defaultValue: "http://provider-c:8080",
-				f:            &requests.CreateFunctionRequest{},
+				f:            &types.FunctionDeployment{},
 				expected:     "http://provider-c:8080",
 			},
 		},

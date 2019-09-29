@@ -26,7 +26,7 @@ faasnetes:
     periodSeconds: 10
 
 faasfederation:
-  image: ewilde/faas-federation:0.1
+  image: openfaas/faas-federation:0.1
   replicas: 1
   readTimeout : "60s"
   writeTimeout : "60s"
@@ -44,7 +44,7 @@ faasfederation:
   default_provider: "http://faasnetes.openfaas:8080"
 
 faaslambda:
-  image: ewilde/faas-lambda:0.1
+  image: openfaas/faas-lambda:0.1
   replicas: 1
   readTimeout : "60s"
   writeTimeout : "60s"

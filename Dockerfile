@@ -1,8 +1,9 @@
 FROM golang:1.11 as build
 
-RUN mkdir -p /go/src/github.com/ewilde/faas-federation/
+RUN mkdir -p /go/src/github.com/openfaas-incubator/faas-federation/
+ENV CGO_ENABLED=0
 
-WORKDIR /go/src/github.com/ewilde/faas-federation
+WORKDIR /go/src/github.com/openfaas-incubator/faas-federation
 
 COPY .git     .git
 COPY handlers handlers
@@ -46,6 +47,6 @@ EXPOSE 8080
 ENV http_proxy      ""
 ENV https_proxy     ""
 
-COPY --from=build /go/src/github.com/ewilde/faas-federation/faas-federation    .
+COPY --from=build /go/src/github.com/openfaas-incubator/faas-federation/faas-federation    .
 
 CMD ["./faas-federation"]

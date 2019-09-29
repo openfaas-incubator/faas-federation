@@ -7,9 +7,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/ewilde/faas-federation/routing"
-	"github.com/openfaas/faas/gateway/requests"
+	"github.com/openfaas-incubator/faas-federation/routing"
 
+	types "github.com/openfaas/faas-provider/types"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,7 +27,7 @@ func MakeFunctionReader(providers []string) http.HandlerFunc {
 			return
 		}
 
-		var result []*requests.Function
+		var result []*types.FunctionStatus
 		for _, v := range functions.Providers {
 			result = append(result, v...)
 		}

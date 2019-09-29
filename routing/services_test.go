@@ -6,7 +6,7 @@ package routing
 import (
 	"testing"
 
-	acc "github.com/ewilde/faas-federation/testing"
+	acc "github.com/openfaas-incubator/faas-federation/testing"
 )
 
 // Test_readServices requires `make up` and `cd examples && faas-cli up`

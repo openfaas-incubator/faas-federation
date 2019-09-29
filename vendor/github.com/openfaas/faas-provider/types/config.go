@@ -7,20 +7,25 @@ import (
 
 // FaaSHandlers provide handlers for OpenFaaS
 type FaaSHandlers struct {
-	FunctionReader http.HandlerFunc
-	DeployHandler  http.HandlerFunc
 	// FunctionProxy provides the function invocation proxy logic.  Use proxy.NewHandlerFunc to
 	// use the standard OpenFaaS proxy implementation or provide completely custom proxy logic.
-	FunctionProxy  http.HandlerFunc
+	FunctionProxy http.HandlerFunc
+
+	FunctionReader http.HandlerFunc
+	DeployHandler  http.HandlerFunc
+
 	DeleteHandler  http.HandlerFunc
 	ReplicaReader  http.HandlerFunc
 	ReplicaUpdater http.HandlerFunc
 	SecretHandler  http.HandlerFunc
+	// LogHandler provides streaming json logs of functions
+	LogHandler http.HandlerFunc
 
-	// Optional: Update an existing function
-	UpdateHandler http.HandlerFunc
-	HealthHandler http.HandlerFunc
-	InfoHandler   http.HandlerFunc
+	// UpdateHandler an existing function/service
+	UpdateHandler        http.HandlerFunc
+	HealthHandler        http.HandlerFunc
+	InfoHandler          http.HandlerFunc
+	ListNamespaceHandler http.HandlerFunc
 }
 
 // FaaSConfig set config for HTTP handlers

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/openfaas/faas/gateway/requests"
+	types "github.com/openfaas/faas-provider/types"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,14 +16,14 @@ const federationProviderNameConstraint = "com.openfaas.federation.gateway"
 // is currently responsible for a given function
 type ProviderLookup interface {
 	Resolve(functionName string) (providerURI *url.URL, err error)
-	AddFunction(f *requests.CreateFunctionRequest)
-	GetFunction(name string) (*requests.CreateFunctionRequest, bool)
-	GetFunctions() []*requests.CreateFunctionRequest
+	AddFunction(f *types.FunctionDeployment)
+	GetFunction(name string) (*types.FunctionDeployment, bool)
+	GetFunctions() []*types.FunctionDeployment
 	ReloadCache() error
 }
 
 type defaultProviderRouting struct {
-	cache           map[string]*requests.CreateFunctionRequest
+	cache           map[string]*types.FunctionDeployment
 	providers       map[string]*url.URL
 	defaultProvider *url.URL
 	lock            sync.RWMutex
@@ -48,7 +48,7 @@ func NewDefaultProviderRouting(providers []string, defaultProvider string) (Prov
 	}
 
 	return &defaultProviderRouting{
-		cache:           make(map[string]*requests.CreateFunctionRequest),
+		cache:           make(map[string]*types.FunctionDeployment),
 		providers:       providerMap,
 		defaultProvider: d,
 	}, nil
@@ -111,7 +111,7 @@ func (d *defaultProviderRouting) Resolve(functionName string) (providerURI *url.
 	return pURL, nil
 }
 
-func ensureAnnotation(f *requests.CreateFunctionRequest, defaultValue string) {
+func ensureAnnotation(f *types.FunctionDeployment, defaultValue string) {
 	found := false
 	if f.Annotations != nil {
 		_, found = (*f.Annotations)[federationProviderNameConstraint]
@@ -138,13 +138,13 @@ func getHostNameWithoutPorts(v *url.URL) string {
 	return strings.Split(v.Host, ":")[0]
 }
 
-func (d *defaultProviderRouting) AddFunction(f *requests.CreateFunctionRequest) {
+func (d *defaultProviderRouting) AddFunction(f *types.FunctionDeployment) {
 	d.lock.Lock()
 	defer d.lock.Unlock()
 	d.cache[f.Service] = f
 }
 
-func (d *defaultProviderRouting) GetFunction(name string) (*requests.CreateFunctionRequest, bool) {
+func (d *defaultProviderRouting) GetFunction(name string) (*types.FunctionDeployment, bool) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 	v, ok := d.cache[name]
@@ -152,10 +152,10 @@ func (d *defaultProviderRouting) GetFunction(name string) (*requests.CreateFunct
 	return v, ok
 }
 
-func (d *defaultProviderRouting) GetFunctions() []*requests.CreateFunctionRequest {
+func (d *defaultProviderRouting) GetFunctions() []*types.FunctionDeployment {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
-	var result []*requests.CreateFunctionRequest
+	var result []*types.FunctionDeployment
 	for _, v := range d.cache {
 		result = append(result, v)
 	}

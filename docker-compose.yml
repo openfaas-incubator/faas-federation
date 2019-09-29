@@ -40,7 +40,7 @@ services:
   faas-federation:
     ports:
       - 8081:8080
-    image: ewilde/faas-federation:latest
+    image: openfaas/faas-federation:latest
     networks:
       - federation
     environment:
@@ -67,7 +67,7 @@ services:
   faas-provider-a:
     ports:
       - 8082:8080
-    image: ewilde/faas-inmemory:latest
+    image: openfaas/faas-inmemory:latest
     networks:
       - federation
     environment:
@@ -92,7 +92,7 @@ services:
   faas-provider-b:
     ports:
       - 8083:8080
-    image: ewilde/faas-inmemory:latest
+    image: openfaas/faas-inmemory:latest
     networks:
       - federation
     environment:

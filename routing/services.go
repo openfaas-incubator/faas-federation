@@ -6,13 +6,13 @@ import (
 	"io/ioutil"
 	"net/url"
 
-	"github.com/openfaas/faas/gateway/requests"
+	types "github.com/openfaas/faas-provider/types"
 	log "github.com/sirupsen/logrus"
 )
 
 // ReadServicesResult list of deployed functions by provider
 type ReadServicesResult struct {
-	Providers map[string][]*requests.Function
+	Providers map[string][]*types.FunctionStatus
 }
 
 // ReadServices queries each of the given providers to list deployed functions
@@ -26,7 +26,7 @@ func ReadServices(providers []string) (*ReadServicesResult, error) {
 	}
 
 	results := Get(urls, len(providers))
-	serviceResult := &ReadServicesResult{Providers: map[string][]*requests.Function{}}
+	serviceResult := &ReadServicesResult{Providers: map[string][]*types.FunctionStatus{}}
 	for _, v := range results {
 		if v.Err != nil {
 			log.Errorf("error fetching function list for %s. %v", providers[v.Index], v.Err)
@@ -38,7 +38,7 @@ func ReadServices(providers []string) (*ReadServicesResult, error) {
 			break
 		}
 
-		var function []*requests.Function
+		var function []*types.FunctionStatus
 		functionBytes, err := ioutil.ReadAll(v.Response.Body)
 		if err != nil {
 			return nil, fmt.Errorf("error reading response for %s. %v", providers[v.Index], err)
@@ -56,8 +56,8 @@ func ReadServices(providers []string) (*ReadServicesResult, error) {
 	return serviceResult, nil
 }
 
-func createToRequest(request *requests.CreateFunctionRequest) *requests.Function {
-	return &requests.Function{
+func createToRequest(request *types.FunctionDeployment) *types.FunctionStatus {
+	return &types.FunctionStatus{
 		Name:              request.Service,
 		Annotations:       request.Annotations,
 		EnvProcess:        request.EnvProcess,
@@ -68,8 +68,8 @@ func createToRequest(request *requests.CreateFunctionRequest) *requests.Function
 	}
 }
 
-func requestToCreate(f *requests.Function) *requests.CreateFunctionRequest {
-	return &requests.CreateFunctionRequest{
+func requestToCreate(f *types.FunctionStatus) *types.FunctionDeployment {
+	return &types.FunctionDeployment{
 		Service:     f.Name,
 		Annotations: f.Annotations,
 		Labels:      f.Labels,
