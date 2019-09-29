@@ -31,7 +31,7 @@ Coming soon: deploy OpenFaaS with two separate [`faas-memory`](https://github.co
 
 ### helm chart
 
-See also: example of Kubernetes and AWS Lambda federated configuration in the sample [helm chart](deployment/chart/of-federation).
+See also: example of Kubernetes and AWS Lambda federated configuration in the sample [helm chart](chart/of-federation).
 
 ## Constraints
 
@@ -43,8 +43,8 @@ See also: example of Kubernetes and AWS Lambda federated configuration in the sa
 
 All configuration is managed using environment variables
 
-| Option                            | Usage                                                                                          | Default                  | Required |
-|-----------------------------------|------------------------------------------------------------------------------------------------|--------------------------|----------|
+| Option                            | Usage      | Default                  | Required |
+|-----------------------------------|------------|--------------------------|----------|
 | `providers`           | comma separated list of provider URLs i.e. `http://faas-netes:8080,http://faas-lambda:8080` | - |   yes    |
 | `default_provider`    | default provider URLs used when no deployment constraints are matched i.e. `http://faas-netes:8080` | - |   yes    |
 
