@@ -4,6 +4,7 @@
 package handlers
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -25,8 +26,10 @@ func MakeLogHandler(proxy http.HandlerFunc, providerLookup routing.ProviderLooku
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
 		uriPath := uri.String() + "/system/logs?name=" + name
-		log.Info("URI", uri, uriPath)
+
+		log.Infof("URI forwarding logs to: %s", uriPath)
 
 		req, _ := http.NewRequest(http.MethodGet, uriPath, nil)
 		res, resErr := http.DefaultClient.Do(req)
@@ -36,8 +39,12 @@ func MakeLogHandler(proxy http.HandlerFunc, providerLookup routing.ProviderLooku
 			return
 		}
 
-		if res.Body != nil {
-			defer res.Body.Close()
+		if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusContinue {
+			if res.Body != nil {
+				defer res.Body.Close()
+			}
+			http.Error(w, fmt.Sprintf("Incorrect HTTP status code: %d", res.StatusCode), http.StatusInternalServerError)
+			return
 		}
 
 		io.Copy(w, ioutil.NopCloser(res.Body))
