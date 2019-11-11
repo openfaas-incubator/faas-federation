@@ -4,6 +4,8 @@
 package handlers
 
 import (
+	"io"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/openfaas-incubator/faas-federation/routing"
@@ -15,6 +17,29 @@ func MakeLogHandler(proxy http.HandlerFunc, providerLookup routing.ProviderLooku
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Info("log handler")
 
-		proxy.ServeHTTP(w, r)
+		query := r.URL.Query()
+		name := query.Get("name")
+		uri, err := providerLookup.Resolve(name)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		uriPath := uri.String() + "/system/logs?name=" + name
+		log.Info("URI", uri, uriPath)
+
+		req, _ := http.NewRequest(http.MethodGet, uriPath, nil)
+		res, resErr := http.DefaultClient.Do(req)
+
+		if resErr != nil {
+			http.Error(w, resErr.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if res.Body != nil {
+			defer res.Body.Close()
+		}
+
+		io.Copy(w, ioutil.NopCloser(res.Body))
 	}
 }
