@@ -18,12 +18,12 @@
   version = "v1.0.2"
 
 [[projects]]
-  digest = "1:0250441ac9f681c839722297897952ee6d633f2a37dc254eca9d6d21bd1e877d"
+  digest = "1:cdf3df431e70077f94e14a99305808e3d13e96262b4686154970f448f7248842"
   name = "github.com/openfaas/faas"
   packages = ["gateway/requests"]
   pruneopts = "UT"
-  revision = "137b63e61fe55e0aea7df466931198c37817f743"
-  version = "0.18.0"
+  revision = "1c9e12237046fccc3e23b9ca79d0c904157e89ad"
+  version = "0.18.2"
 
 [[projects]]
   digest = "1:fd718cd10034b5b4e3151e3a563653e4144429343f59b1b3c3c8b59ae55207de"

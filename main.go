@@ -69,6 +69,7 @@ func main() {
 		UpdateHandler:  handlers.MakeUpdateHandler(proxyFunc, providerLookup),
 		HealthHandler:  handlers.MakeHealthHandler(),
 		InfoHandler:    handlers.MakeInfoHandler(version.BuildVersion(), version.GitCommitSHA),
+		LogHandler:     handlers.MakeLogHandler(proxyFunc, providerLookup),
 	}
 
 	bootstrapConfig := bootTypes.FaaSConfig{
