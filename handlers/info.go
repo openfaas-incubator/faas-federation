@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	//OrchestrationIdentifier identifier string for provider orchestration
+	// OrchestrationIdentifier identifier string for provider orchestration
 	OrchestrationIdentifier = "federation"
-	//ProviderName name of the provider
+	// ProviderName name of the provider
 	ProviderName = "faas-federation"
 )
 

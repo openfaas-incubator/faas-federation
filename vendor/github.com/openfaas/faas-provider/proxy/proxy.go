@@ -134,6 +134,7 @@ func proxyRequest(w http.ResponseWriter, originalReq *http.Request, proxyClient 
 	}
 
 	start := time.Now()
+	log.Printf("proxying to: %s %s %s\n", proxyReq.Host, proxyReq.URL, proxyReq.RequestURI)
 	response, err := proxyClient.Do(proxyReq.WithContext(ctx))
 	seconds := time.Since(start)
 
